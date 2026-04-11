@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcrypt";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
@@ -7,37 +9,38 @@ export async function POST(request: Request) {
     const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-    // If env vars not set, return error
     if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
-      console.error(
-        "ADMIN_USERNAME or ADMIN_PASSWORD environment variables not set!",
-      );
+      console.error("ADMIN_USERNAME or ADMIN_PASSWORD environment variables not set!");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 },
       );
     }
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // In production, generate a proper JWT token
-      const token = Buffer.from(`${username}:${Date.now()}`).toString("base64");
-
-      return NextResponse.json({
-        success: true,
-        token,
-        message: "Login successful",
-      });
-    } else {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 },
-      );
+    if (username !== ADMIN_USERNAME) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
+
+    // Check DB hash first, fall back to env var
+    const hashSetting = await prisma.setting.findUnique({
+      where: { key: "admin_password_hash" },
+    });
+
+    let passwordValid: boolean;
+    if (hashSetting) {
+      passwordValid = await bcrypt.compare(password, hashSetting.value);
+    } else {
+      passwordValid = password === ADMIN_PASSWORD;
+    }
+
+    if (!passwordValid) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    const token = Buffer.from(`${username}:${Date.now()}`).toString("base64");
+    return NextResponse.json({ success: true, token, message: "Login successful" });
   } catch (error) {
     console.error("Auth error:", error);
-    return NextResponse.json(
-      { error: "Authentication failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
   }
 }
