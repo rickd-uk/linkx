@@ -19,6 +19,10 @@ export async function POST(request: Request) {
       );
     }
 
+    if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
     if (newPassword.length < 8) {
       return NextResponse.json(
         { error: "New password must be at least 8 characters" },
