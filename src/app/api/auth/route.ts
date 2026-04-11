@@ -6,15 +6,16 @@ export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
 
+    if (!username || !password) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
     const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
-      console.error("ADMIN_USERNAME or ADMIN_PASSWORD environment variables not set!");
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 },
-      );
+    if (!ADMIN_USERNAME) {
+      console.error("ADMIN_USERNAME environment variable not set!");
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     if (username !== ADMIN_USERNAME) {
@@ -25,6 +26,11 @@ export async function POST(request: Request) {
     const hashSetting = await prisma.setting.findUnique({
       where: { key: "admin_password_hash" },
     });
+
+    if (!hashSetting && !ADMIN_PASSWORD) {
+      console.error("No admin password configured (no DB hash and ADMIN_PASSWORD not set)!");
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+    }
 
     let passwordValid: boolean;
     if (hashSetting) {
