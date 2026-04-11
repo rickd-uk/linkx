@@ -46,3 +46,4 @@ ecosystem.config.cjs
 .specstory/
 
 
+dev.db
