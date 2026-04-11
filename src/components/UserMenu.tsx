@@ -10,7 +10,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ remainingBudget }: UserMenuProps) {
-  const { user, loading, isAuthenticated, logout } = useAuth();
+  const { user, loading, isAuthenticated, logout, checkAuth } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [signupsEnabled, setSignupsEnabled] = useState(true);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -71,6 +71,7 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("user_token", data.token);
+        checkAuth();
         setCpSuccess(true);
         setTimeout(() => {
           setShowChangePassword(false);
@@ -176,7 +177,7 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
       )}
 
       {showChangePassword && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
 
@@ -224,7 +225,7 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
 
             <div className="mt-5 flex gap-2 justify-end">
               <button
-                onClick={() => { setShowChangePassword(false); setCpCurrentPassword(""); setCpNewPassword(""); setCpConfirmPassword(""); setCpError(null); setCpSuccess(false); }}
+                onClick={() => { setShowChangePassword(false); setCpCurrentPassword(""); setCpNewPassword(""); setCpConfirmPassword(""); setCpError(null); setCpSuccess(false); setCpLoading(false); }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 disabled={cpLoading || cpSuccess}
               >
