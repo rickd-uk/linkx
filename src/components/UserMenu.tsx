@@ -63,6 +63,7 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
     setCpLoading(true);
     try {
       const token = localStorage.getItem("user_token");
+      if (!token) { setCpError("Session lost — please log in again"); return; }
       const res = await fetch("/api/user/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -177,9 +178,9 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
       )}
 
       {showChangePassword && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-labelledby="change-password-title">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
+            <h2 id="change-password-title" className="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
 
             <div className="space-y-3">
               <div>
