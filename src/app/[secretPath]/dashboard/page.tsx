@@ -769,6 +769,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setCpCurrentPassword(e.target.value)}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={cpLoading || cpSuccess}
+                  autoFocus
                 />
               </div>
               <div>
@@ -787,6 +788,7 @@ export default function AdminDashboard() {
                   type="password"
                   value={cpConfirmPassword}
                   onChange={(e) => setCpConfirmPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={cpLoading || cpSuccess}
                 />
