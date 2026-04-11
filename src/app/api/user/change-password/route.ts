@@ -12,15 +12,15 @@ export async function POST(request: Request) {
   try {
     const { currentPassword, newPassword } = await request.json();
 
+    if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
         { error: "currentPassword and newPassword are required" },
         { status: 400 },
       );
-    }
-
-    if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     if (newPassword.length < 8) {
