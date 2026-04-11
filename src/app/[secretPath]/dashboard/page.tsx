@@ -51,7 +51,6 @@ export default function AdminDashboard() {
   const [signupsEnabled, setSignupsEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [stats, setStats] = useState<{ realUsers: number; activeToday: number; totalLinks: number; publicLinks: number; totalVotes: number; totalUsers: number } | null>(null);
-  const router = useRouter();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [cpCurrentPassword, setCpCurrentPassword] = useState("");
   const [cpNewPassword, setCpNewPassword] = useState("");
@@ -59,6 +58,7 @@ export default function AdminDashboard() {
   const [cpError, setCpError] = useState<string | null>(null);
   const [cpSuccess, setCpSuccess] = useState(false);
   const [cpLoading, setCpLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
