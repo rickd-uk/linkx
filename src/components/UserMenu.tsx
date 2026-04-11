@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { User, LogOut, ChevronDown, HelpCircle } from "lucide-react";
+import { User, LogOut, ChevronDown, HelpCircle, KeyRound } from "lucide-react";
 
 interface UserMenuProps {
   remainingBudget?: number;
@@ -13,6 +13,13 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [signupsEnabled, setSignupsEnabled] = useState(true);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [cpCurrentPassword, setCpCurrentPassword] = useState("");
+  const [cpNewPassword, setCpNewPassword] = useState("");
+  const [cpConfirmPassword, setCpConfirmPassword] = useState("");
+  const [cpError, setCpError] = useState<string | null>(null);
+  const [cpSuccess, setCpSuccess] = useState(false);
+  const [cpLoading, setCpLoading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -42,6 +49,45 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
     };
     checkSignupsEnabled();
   }, []);
+
+  const handleChangePassword = async () => {
+    setCpError(null);
+    if (cpNewPassword.length < 8) {
+      setCpError("New password must be at least 8 characters");
+      return;
+    }
+    if (cpNewPassword !== cpConfirmPassword) {
+      setCpError("New passwords do not match");
+      return;
+    }
+    setCpLoading(true);
+    try {
+      const token = localStorage.getItem("user_token");
+      const res = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword: cpCurrentPassword, newPassword: cpNewPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("user_token", data.token);
+        setCpSuccess(true);
+        setTimeout(() => {
+          setShowChangePassword(false);
+          setCpCurrentPassword("");
+          setCpNewPassword("");
+          setCpConfirmPassword("");
+          setCpSuccess(false);
+        }, 1500);
+      } else {
+        setCpError(data.error ?? "Failed to change password");
+      }
+    } catch {
+      setCpError("Failed to change password");
+    } finally {
+      setCpLoading(false);
+    }
+  };
 
   if (loading) {
     return <div className="w-20 h-8 rounded bg-blue-500/30 animate-pulse" />;
@@ -110,6 +156,13 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
             Help &amp; About
           </Link>
           <button
+            onClick={() => { setIsOpen(false); setShowChangePassword(true); setCpError(null); setCpSuccess(false); }}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+          >
+            <KeyRound className="w-4 h-4" />
+            Change Password
+          </button>
+          <button
             onClick={() => {
               logout();
               setIsOpen(false);
@@ -119,6 +172,73 @@ export default function UserMenu({ remainingBudget }: UserMenuProps) {
             <LogOut className="w-4 h-4" />
             Log Out
           </button>
+        </div>
+      )}
+
+      {showChangePassword && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={cpCurrentPassword}
+                  onChange={(e) => setCpCurrentPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={cpLoading || cpSuccess}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={cpNewPassword}
+                  onChange={(e) => setCpNewPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={cpLoading || cpSuccess}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={cpConfirmPassword}
+                  onChange={(e) => setCpConfirmPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={cpLoading || cpSuccess}
+                />
+              </div>
+            </div>
+
+            {cpError && (
+              <p className="mt-3 text-sm text-red-600">{cpError}</p>
+            )}
+            {cpSuccess && (
+              <p className="mt-3 text-sm text-green-600">Password changed successfully!</p>
+            )}
+
+            <div className="mt-5 flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowChangePassword(false); setCpCurrentPassword(""); setCpNewPassword(""); setCpConfirmPassword(""); setCpError(null); setCpSuccess(false); }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                disabled={cpLoading || cpSuccess}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleChangePassword}
+                disabled={cpLoading || cpSuccess}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-60"
+              >
+                {cpLoading ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
