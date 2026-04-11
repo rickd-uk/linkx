@@ -34,7 +34,11 @@ export async function POST(request: Request) {
     if (hashSetting) {
       currentPasswordValid = await bcrypt.compare(currentPassword, hashSetting.value);
     } else {
-      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "";
+      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+      if (!ADMIN_PASSWORD) {
+        console.error("No admin password configured (no DB hash and ADMIN_PASSWORD not set)!");
+        return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      }
       currentPasswordValid = currentPassword === ADMIN_PASSWORD;
     }
 
