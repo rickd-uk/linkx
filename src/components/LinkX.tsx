@@ -229,14 +229,14 @@ const LinkRow = memo(function LinkRow({
 });
 
 export default function LinkX() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const { remainingBudget, vote: castVote, removeVote, getVoteCount, initFromServer } =
     useVoting(isAuthenticated);
 
-  // Refs so fetchLinks can read current values without them being deps (avoids double-fetch)
+  // Refs so fetchLinks can read current values without making it unstable.
   const userRef = useRef(user);
   const initFromServerRef = useRef(initFromServer);
-  const fetchCalledRef = useRef(false);
+  const lastFetchAuthKeyRef = useRef<string | null>(null);
   useEffect(() => { userRef.current = user; }, [user]);
   useEffect(() => { initFromServerRef.current = initFromServer; }, [initFromServer]);
 
@@ -421,11 +421,12 @@ export default function LinkX() {
   }, []);
 
   useEffect(() => {
-    // Guard against React StrictMode double-invocation
-    if (fetchCalledRef.current) return;
-    fetchCalledRef.current = true;
+    if (authLoading) return;
+    const authKey = user?.id ?? "anonymous";
+    if (lastFetchAuthKeyRef.current === authKey) return;
+    lastFetchAuthKeyRef.current = authKey;
     fetchLinks();
-  }, [fetchLinks]);
+  }, [authLoading, user?.id, fetchLinks]);
 
   // Fetch initial trash count for authenticated users
   useEffect(() => {

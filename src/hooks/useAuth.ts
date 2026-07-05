@@ -14,6 +14,12 @@ interface AuthState {
   error: string | null;
 }
 
+const AUTH_CHANGED_EVENT = "linkx-auth-changed";
+
+function notifyAuthChanged() {
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
+
 function parseJwt(token: string): { userId: string; username: string; exp: number } | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -63,6 +69,20 @@ export function useAuth() {
 
   useEffect(() => {
     checkAuth();
+
+    const handleAuthChanged = () => {
+      checkAuth();
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "user_token") checkAuth();
+    };
+
+    window.addEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, [checkAuth]);
 
   const login = async (username: string, password: string) => {
@@ -81,6 +101,7 @@ export function useAuth() {
 
       localStorage.setItem("user_token", data.token);
       setState({ user: data.user, loading: false, error: null });
+      notifyAuthChanged();
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed";
@@ -105,6 +126,7 @@ export function useAuth() {
 
       localStorage.setItem("user_token", data.token);
       setState({ user: data.user, loading: false, error: null });
+      notifyAuthChanged();
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Signup failed";
@@ -116,6 +138,7 @@ export function useAuth() {
   const logout = () => {
     localStorage.removeItem("user_token");
     setState({ user: null, loading: false, error: null });
+    notifyAuthChanged();
   };
 
   return {
