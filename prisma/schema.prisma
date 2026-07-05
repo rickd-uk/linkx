@@ -36,11 +36,27 @@ model Link {
   createdBy   User?    @relation("UserLinks", fields: [createdById], references: [id], onDelete: SetNull)
   deletedAt   DateTime? // null = active, set = soft-deleted (in recycle bin)
   votes       Vote[]
+  archives    ArchivedLink[]
 
   @@index([category])
   @@index([createdById])
   @@index([isPublic])
   @@index([deletedAt])
+}
+
+model ArchivedLink {
+  id         String   @id @default(cuid())
+  linkId     String
+  userId     String
+  archivedAt DateTime @default(now())
+
+  link       Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([linkId, userId])
+  @@index([userId])
+  @@index([linkId])
+  @@index([archivedAt])
 }
 
 model Vote {
@@ -73,6 +89,7 @@ model User {
   votes         Vote[]
   links         Link[]     @relation("UserLinks")
   categories    Category[] @relation("UserCategories")
+  archives      ArchivedLink[]
 
   @@index([email])
 }
