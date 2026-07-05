@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import Papa from 'papaparse';
 import fs from 'fs';
 import path from 'path';
+import { normalizeAuthor } from '@/lib/authorFallback';
 
 interface CSVLink {
     title: string;
@@ -43,7 +44,7 @@ export async function GET() {
                     url: link.url,
                     category: link.category,
                     description: link.description?.trim(), 
-                    author: link.author?.trim() || 'Unknown Author',
+                    author: normalizeAuthor(link.author, link.url),
                     timestamp: new Date(),
                 }
             });

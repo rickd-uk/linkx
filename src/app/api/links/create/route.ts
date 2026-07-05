@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkAuth, unauthorizedResponse } from "@/lib/auth";
 import { getUserFromRequest } from "@/lib/userAuth";
+import { normalizeAuthor } from "@/lib/authorFallback";
 
 export async function POST(request: Request) {
   // Check for admin auth first
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
         url,
         description: description || null,
         category: category || null,
-        author: author || "Unknown Author",
+        author: normalizeAuthor(author, url),
         timestamp: new Date(),
         publicationDay: publicationDay || null,
         publicationMonth: publicationMonth || null,

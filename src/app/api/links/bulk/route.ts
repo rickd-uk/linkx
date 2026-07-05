@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import Papa from "papaparse";
 import { checkAuth, unauthorizedResponse } from "@/lib/auth";
+import { normalizeAuthor } from "@/lib/authorFallback";
 
 // Define required CSV fields
 interface CSVLink {
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
             url: link.url.trim(),
             category: link.category.trim(),
             description: link.description?.trim() || "No description provided",
-            author: link.author?.trim() || "Unknown Author", // Default if missing
+            author: normalizeAuthor(link.author, link.url),
             timestamp: new Date(), // Default to current date/time
           },
         });

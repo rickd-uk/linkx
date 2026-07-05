@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkAuth, unauthorizedResponse } from "@/lib/auth";
 import { getUserFromRequest } from "@/lib/userAuth";
+import { normalizeAuthor } from "@/lib/authorFallback";
 
 export async function DELETE(
   request: Request,
@@ -102,7 +103,11 @@ export async function PATCH(
     if (body.category !== undefined) updateData.category = body.category;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.isPublic !== undefined) updateData.isPublic = body.isPublic;
-    if (body.author !== undefined) updateData.author = body.author;
+    if (body.author !== undefined) {
+      updateData.author = normalizeAuthor(body.author, body.url ?? link.url);
+    } else if (body.url !== undefined) {
+      updateData.author = normalizeAuthor(link.author, body.url);
+    }
     if (body.publicationDay !== undefined) updateData.publicationDay = body.publicationDay;
     if (body.publicationMonth !== undefined) updateData.publicationMonth = body.publicationMonth;
     if (body.publicationYear !== undefined) updateData.publicationYear = body.publicationYear;

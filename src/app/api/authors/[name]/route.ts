@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkAuth, unauthorizedResponse } from "@/lib/auth";
+import { normalizeAuthor } from "@/lib/authorFallback";
 
 // Rename an author
 export async function PUT(
@@ -87,19 +88,27 @@ export async function DELETE(
         },
       });
 
-      // Set real links to "Unknown Author"
-      const result = await prisma.link.updateMany({
+      const links = await prisma.link.findMany({
         where: {
           author: decodedName,
           NOT: { title: { startsWith: "__AUTHOR_PLACEHOLDER__" } },
         },
-        data: { author: "Unknown Author" },
+        select: { id: true, url: true },
       });
+
+      let updatedLinksCount = 0;
+      for (const link of links) {
+        await prisma.link.update({
+          where: { id: link.id },
+          data: { author: normalizeAuthor(null, link.url) },
+        });
+        updatedLinksCount++;
+      }
 
       return NextResponse.json({
         success: true,
-        message: "Author removed, links set to Unknown Author",
-        updatedLinksCount: result.count,
+        message: "Author removed, links set to URL hostname",
+        updatedLinksCount,
       });
     }
   } catch (error) {

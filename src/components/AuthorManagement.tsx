@@ -118,7 +118,7 @@ export default function AuthorManagement({
         );
       } else {
         setSuccess(
-          `Author removed from ${data.updatedLinksCount} links (set to "Unknown Author").`,
+          `Author removed from ${data.updatedLinksCount} links (set to URL hostname).`,
         );
       }
 
@@ -407,7 +407,7 @@ export default function AuthorManagement({
 
       <p className="text-xs text-gray-500 mt-3">
         <strong>Note:</strong> Renaming updates all links. Deleting sets
-        links to &quot;Unknown Author&quot;.
+        links to their URL hostname.
       </p>
     </div>
   );

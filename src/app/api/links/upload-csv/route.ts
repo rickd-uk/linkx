@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkAuth, unauthorizedResponse } from "@/lib/auth";
+import { normalizeAuthor } from "@/lib/authorFallback";
 
 // interface CSVRow {
 //   title: string;
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
             url: url,
             category: category,
             description: description || null,
-            author: author || null,
+            author: normalizeAuthor(author, url),
             timestamp: new Date(),
           },
         });
