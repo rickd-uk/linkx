@@ -35,6 +35,28 @@ interface Link {
 
 const LINKS_PER_PAGE = 20;
 
+const linkUrlKey = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    parsed.hash = "";
+    parsed.hostname = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    parsed.pathname = parsed.pathname.replace(/\/$/, "");
+    return parsed.toString();
+  } catch {
+    return url.trim().toLowerCase();
+  }
+};
+
+const dedupeLinksByUrl = (links: Link[]) => {
+  const seen = new Set<string>();
+  return links.filter((link) => {
+    const key = linkUrlKey(link.url);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 // Outside component — stable reference, no closure dependencies
 const fmtDate = (d: Date) => {
   const now = new Date();
@@ -466,6 +488,7 @@ export default function LinkX() {
     } else {
       result.sort((a, b) => b.hotScore - a.hotScore);
     }
+    result = dedupeLinksByUrl(result);
     setFilteredLinks(result);
     setPage(1);
     setDisplayedLinks(result.slice(0, LINKS_PER_PAGE));

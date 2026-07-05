@@ -5,6 +5,10 @@ import { checkAuth, unauthorizedResponse } from "@/lib/auth";
 import { getUserFromRequest } from "@/lib/userAuth";
 import { normalizeAuthor } from "@/lib/authorFallback";
 
+function normalizeUrlInput(url: string) {
+  return url.trim();
+}
+
 export async function POST(request: Request) {
   // Check for admin auth first
   const isAdmin = checkAuth(request);
@@ -38,6 +42,30 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedUrl = normalizeUrlInput(url);
+    try {
+      new URL(normalizedUrl);
+    } catch {
+      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
+    }
+
+    const existingLink = await prisma.link.findFirst({
+      where: {
+        deletedAt: null,
+        url: normalizedUrl,
+        OR: isAdmin
+          ? undefined
+          : [
+              { createdById: user?.userId ?? null },
+              { isPublic: true },
+            ],
+      },
+    });
+
+    if (existingLink) {
+      return NextResponse.json({ ...existingLink, duplicate: true }, { status: 200 });
+    }
+
     // Uncategorized links are always private; public requires a category
     const isPublic = isAdmin
       ? Boolean(category)  // admin links with no category also stay private
@@ -46,10 +74,10 @@ export async function POST(request: Request) {
     const newLink = await prisma.link.create({
       data: {
         title,
-        url,
+        url: normalizedUrl,
         description: description || null,
         category: category || null,
-        author: normalizeAuthor(author, url),
+        author: normalizeAuthor(author, normalizedUrl),
         timestamp: new Date(),
         publicationDay: publicationDay || null,
         publicationMonth: publicationMonth || null,
