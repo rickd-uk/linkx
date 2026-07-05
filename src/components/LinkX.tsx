@@ -301,7 +301,7 @@ export default function LinkX() {
 
   const [triageLinks, setTriageLinks] = useState<Link[]>([]);
   const [triageOpen, setTriageOpen] = useState(true);
-  const archivedCount = allLinks.filter((link) => link.archivedAt).length;
+  const archivedCount = dedupeLinksByUrl(allLinks.filter((link) => link.archivedAt)).length;
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -324,52 +324,75 @@ export default function LinkX() {
   }, [castVote, getVoteCount]);
 
   const archiveLink = useCallback(async (linkId: string) => {
+    const target = allLinks.find((link) => link.id === linkId);
+    if (!target) return;
+
+    const targetKey = linkUrlKey(target.url);
+    const duplicateIds = allLinks
+      .filter((link) => linkUrlKey(link.url) === targetKey)
+      .map((link) => link.id);
+    const previousArchivedAt = new Map(
+      allLinks
+        .filter((link) => duplicateIds.includes(link.id))
+        .map((link) => [link.id, link.archivedAt])
+    );
     const archivedAt = new Date().toISOString();
-    setAllLinks((prev) => prev.map((link) => link.id === linkId ? { ...link, archivedAt } : link));
+    setAllLinks((prev) => prev.map((link) => duplicateIds.includes(link.id) ? { ...link, archivedAt } : link));
 
     const token = localStorage.getItem("user_token");
-    const res = await fetch("/api/links/archive", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ linkId }),
-    });
+    const responses = await Promise.all(duplicateIds.map((id) =>
+      fetch("/api/links/archive", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ linkId: id }),
+      })
+    ));
 
-    if (!res.ok) {
-      setAllLinks((prev) => prev.map((link) => link.id === linkId ? { ...link, archivedAt: null } : link));
+    if (responses.some((res) => !res.ok)) {
+      setAllLinks((prev) => prev.map((link) => duplicateIds.includes(link.id) ? { ...link, archivedAt: previousArchivedAt.get(link.id) ?? null } : link));
       return;
     }
 
-    const data = await res.json().catch(() => null);
+    const data = await responses[0].json().catch(() => null);
     if (data?.archive?.archivedAt) {
-      setAllLinks((prev) => prev.map((link) => link.id === linkId ? { ...link, archivedAt: data.archive.archivedAt } : link));
+      setAllLinks((prev) => prev.map((link) => duplicateIds.includes(link.id) ? { ...link, archivedAt: data.archive.archivedAt } : link));
     }
-  }, []);
+  }, [allLinks]);
 
   const unarchiveLink = useCallback(async (linkId: string) => {
-    let previousArchivedAt: string | null = null;
-    setAllLinks((prev) => prev.map((link) => {
-      if (link.id !== linkId) return link;
-      previousArchivedAt = link.archivedAt;
-      return { ...link, archivedAt: null };
-    }));
+    const target = allLinks.find((link) => link.id === linkId);
+    if (!target) return;
+
+    const targetKey = linkUrlKey(target.url);
+    const duplicateIds = allLinks
+      .filter((link) => linkUrlKey(link.url) === targetKey)
+      .map((link) => link.id);
+    const previousArchivedAt = new Map(
+      allLinks
+        .filter((link) => duplicateIds.includes(link.id))
+        .map((link) => [link.id, link.archivedAt])
+    );
+    setAllLinks((prev) => prev.map((link) => duplicateIds.includes(link.id) ? { ...link, archivedAt: null } : link));
 
     const token = localStorage.getItem("user_token");
-    const res = await fetch("/api/links/archive", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ linkId }),
-    });
+    const responses = await Promise.all(duplicateIds.map((id) =>
+      fetch("/api/links/archive", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ linkId: id }),
+      })
+    ));
 
-    if (!res.ok) {
-      setAllLinks((prev) => prev.map((link) => link.id === linkId ? { ...link, archivedAt: previousArchivedAt } : link));
+    if (responses.some((res) => !res.ok)) {
+      setAllLinks((prev) => prev.map((link) => duplicateIds.includes(link.id) ? { ...link, archivedAt: previousArchivedAt.get(link.id) ?? null } : link));
     }
-  }, []);
+  }, [allLinks]);
 
   const fetchLinks = useCallback(async () => {
     try {
