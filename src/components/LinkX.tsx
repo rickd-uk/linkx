@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import Image from "next/image";
 import { Raleway } from "next/font/google";
+import { Archive } from "lucide-react";
 
 const raleway = Raleway({ subsets: ["latin"], weight: "700", style: "italic", display: "swap" });
 import UserMenu from "./UserMenu";
@@ -301,7 +302,6 @@ export default function LinkX() {
 
   const [triageLinks, setTriageLinks] = useState<Link[]>([]);
   const [triageOpen, setTriageOpen] = useState(true);
-  const archivedCount = dedupeLinksByUrl(allLinks.filter((link) => link.archivedAt)).length;
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -779,15 +779,12 @@ export default function LinkX() {
             {isAuthenticated && (
               <button
                 onClick={() => setShowArchived((v) => !v)}
+                aria-label={showArchived ? "Show active links" : "Show archived links"}
                 title={showArchived ? "Show active links" : "Show archived links"}
-                className={`relative p-2 rounded-lg border transition-colors ${showArchived ? "bg-emerald-600 text-white border-emerald-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"}`}
+                className={`flex items-center gap-1.5 p-2 rounded-lg border transition-colors ${showArchived ? "bg-emerald-600 text-white border-emerald-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"}`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M5 7l1.2 12A2 2 0 008.19 21h7.62a2 2 0 001.99-2L19 7M10 3h4a2 2 0 012 2v2H8V5a2 2 0 012-2z" /></svg>
-                {archivedCount > 0 && (
-                  <span className={`absolute -top-1 -right-1 text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center leading-none ${showArchived ? "bg-white text-emerald-700" : "bg-emerald-600 text-white"}`}>
-                    {archivedCount > 99 ? "99+" : archivedCount}
-                  </span>
-                )}
+                <Archive className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs font-medium">{showArchived ? "Archived" : "Archive"}</span>
               </button>
             )}
           </div>
