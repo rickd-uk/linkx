@@ -166,7 +166,7 @@ export default function CategoryManagement({
         );
       } else {
         setSuccess(
-          `Category removed from ${data.updatedLinksCount} links (set to "Uncategorized").`,
+          `Category removed from ${data.updatedLinksCount} links (set to no category).`,
         );
       }
 
@@ -488,7 +488,7 @@ export default function CategoryManagement({
 
       <p className="text-xs text-gray-500 mt-3">
         <strong>Note:</strong> Renaming updates all links. Deleting removes or
-        sets links to &quot;Uncategorized&quot;.
+        sets links to no category.
       </p>
     </div>
   );

@@ -117,7 +117,7 @@ export async function DELETE(
         },
       });
 
-      // Set category to "Uncategorized" for real links only
+      // Remove category from real links only. Uncategorized links are private.
       const result = await prisma.link.updateMany({
         where: {
           category: decodedName,
@@ -126,13 +126,14 @@ export async function DELETE(
           },
         },
         data: {
-          category: "Uncategorized",
+          category: null,
+          isPublic: false,
         },
       });
 
       return NextResponse.json({
         success: true,
-        message: "Category removed, links set to Uncategorized",
+        message: "Category removed, links set to no category",
         updatedLinksCount: result.count,
       });
     }

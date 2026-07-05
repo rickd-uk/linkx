@@ -1,10 +1,36 @@
-// Migrates links from old categories to new ones, and cleans up removed categories.
+// Migrates links from old categories to new ones, adds current categories,
+// and cleans up removed categories.
 // Run with: node scripts/migrate-categories.mjs
 
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
+const categoriesToAdd = [
+  { name: 'Computing', icon: '🖥️' },
+  { name: 'Biology', icon: '🧬' },
+  { name: 'Physics', icon: '⚛️' },
+  { name: 'Chemistry', icon: '⚗️' },
+  { name: 'Brain Science', icon: '🧠' },
+]
+
+const removedCategories = [
+  'ASMR',
+  'Design',
+  'Law',
+  'Photography',
+  'Science',
+]
+
 async function main() {
+  for (const category of categoriesToAdd) {
+    await prisma.category.upsert({
+      where: { name: category.name },
+      update: { icon: category.icon, isPublic: true },
+      create: { name: category.name, icon: category.icon, isPublic: true },
+    })
+    console.log(`Upserted category: ${category.icon} ${category.name}`)
+  }
+
   // Rename Technology → Dev
   const techResult = await prisma.link.updateMany({
     where: { category: 'Technology' },
@@ -26,8 +52,16 @@ async function main() {
   })
   console.log(`Gaming → uncategorized (private): ${gamingResult.count} links`)
 
+  for (const name of removedCategories) {
+    const result = await prisma.link.updateMany({
+      where: { category: name },
+      data: { category: null, isPublic: false },
+    })
+    console.log(`${name} → uncategorized (private): ${result.count} links`)
+  }
+
   // Delete removed categories from Category table
-  const removed = ['Technology', 'Conflict', 'Gaming']
+  const removed = ['Technology', 'Conflict', 'Gaming', ...removedCategories]
   for (const name of removed) {
     await prisma.category.deleteMany({ where: { name } })
     console.log(`Deleted category: ${name}`)

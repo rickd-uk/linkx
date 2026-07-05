@@ -25,17 +25,27 @@ const DOMAIN_RULES: Record<string, string> = {
   "thenewstack.io": "Dev",
   "lwn.net": "Dev",
   "lobste.rs": "Dev",
-  // Science
-  "arxiv.org": "Science",
-  "nature.com": "Science",
-  "science.org": "Science",
-  "sciencedirect.com": "Science",
-  "ncbi.nlm.nih.gov": "Science",
-  "pubmed.ncbi.nlm.nih.gov": "Science",
-  "newscientist.com": "Science",
-  "scientificamerican.com": "Science",
-  "physicstoday.scitation.org": "Science",
-  "pnas.org": "Science",
+  // Computing
+  "arxiv.org": "Computing",
+  "acm.org": "Computing",
+  "ieee.org": "Computing",
+  "computer.org": "Computing",
+  "cacm.acm.org": "Computing",
+  // Biology
+  "nature.com": "Biology",
+  "science.org": "Biology",
+  "ncbi.nlm.nih.gov": "Biology",
+  "pubmed.ncbi.nlm.nih.gov": "Biology",
+  "pnas.org": "Biology",
+  // Physics
+  "physicstoday.scitation.org": "Physics",
+  "physicsworld.com": "Physics",
+  "aps.org": "Physics",
+  "cern.ch": "Physics",
+  // Chemistry
+  "acs.org": "Chemistry",
+  "rsc.org": "Chemistry",
+  "chemistryworld.com": "Chemistry",
   // Space
   "nasa.gov": "Space",
   "spacex.com": "Space",
@@ -117,12 +127,6 @@ const DOMAIN_RULES: Record<string, string> = {
   "hollywoodreporter.com": "Entertainment",
   "avclub.com": "Entertainment",
   "vulture.com": "Entertainment",
-  // Design
-  "dribbble.com": "Design",
-  "behance.net": "Design",
-  "awwwards.com": "Design",
-  "creativebloq.com": "Design",
-  "smashingmagazine.com": "Design",
   // Education
   "coursera.org": "Education",
   "edx.org": "Education",
@@ -154,8 +158,6 @@ const DOMAIN_RULES: Record<string, string> = {
 const KEYWORD_RULES: { pattern: RegExp; category: string }[] = [
   // AI — before Dev to win on overlap
   { pattern: /\b(chatgpt|openai|anthropic|deepmind|gemini|copilot|\bllm\b|gpt-?[0-9]|artificial intelligence|machine learning|deep learning|neural network|generative ai|large language model|ai model|ai agent|ai-powered)\b/i, category: "AI" },
-  // ASMR
-  { pattern: /\b(asmr|autonomous sensory meridian|tingles|whispering|tapping sounds|relaxing sounds|sleep sounds|binaural|asmrist)\b/i, category: "ASMR" },
   // Guitar — before Music to win on overlap
   { pattern: /\b(guitar|chord progression|guitar tab|guitar riff|fingerpicking|fingerstyle|acoustic guitar|electric guitar|fretboard|strumming|luthier|guitar lesson|guitar solo|guitar tone|pedal board|noodling|shredding)\b/i, category: "Guitar" },
   // Music
@@ -168,8 +170,16 @@ const KEYWORD_RULES: { pattern: RegExp; category: string }[] = [
   { pattern: /\b(war|ceasefire|troops|soldiers|airstrike|air strike|missile|bombing|invasion|insurgency|combat|casualties|hostage|siege|battle|shelling|drone strike|geopolit|foreign policy|international relations|sanctions|nato|un security council|refugee|humanitarian)\b/i, category: "World" },
   // Health
   { pattern: /\b(cancer|vaccine|virus|pandemic|epidemic|hospital|patient|disease|surgery|drug|medication|nhs|mental health|obesity|diabetes|alzheimer|dementia|clinical trial|outbreak|infection|treatment|therapy|diagnosis|doctor|medical)\b/i, category: "Health" },
-  // Science
-  { pattern: /\b(scientists?|researchers? (?:find|found|discover|show)|study finds|new study|research shows|quantum|crispr|genome|dna|species|fossil|climate change|global warming|carbon emissions|particle physics|biology|chemistry|experiment|laboratory)\b/i, category: "Science" },
+  // Brain Science — before Health and Biology to win on overlap
+  { pattern: /\b(neuroscience|brain science|brain|neural circuit|neuron|synapse|cognitive science|cognition|memory|attention|consciousness|fmri|neuroimaging|neuroplasticity|dopamine|serotonin)\b/i, category: "Brain Science" },
+  // Biology
+  { pattern: /\b(biology|biological|genome|genomics|gene editing|crispr|dna|rna|cell biology|microbiology|evolution|species|fossil|ecology|enzyme|protein|immune system|immunology|virus|bacteria)\b/i, category: "Biology" },
+  // Physics
+  { pattern: /\b(physics|quantum|particle physics|relativity|astrophysics|cosmology|matter|energy|electron|proton|neutron|photon|atom|nuclear|superconduct|thermodynamics|mechanics)\b/i, category: "Physics" },
+  // Chemistry
+  { pattern: /\b(chemistry|chemical|molecule|molecular|compound|reaction|catalyst|polymer|material science|materials science|organic chemistry|inorganic chemistry|biochemistry|laboratory experiment)\b/i, category: "Chemistry" },
+  // Computing
+  { pattern: /\b(computing|computer science|algorithm|data structure|operating system|compiler|distributed system|database|networking|cybersecurity|cryptography|cloud computing|high-performance computing|hpc|supercomputer)\b/i, category: "Computing" },
   // Dev
   { pattern: /\b(software|open.?source|programming|developer|typescript|javascript|python|rust|golang|kubernetes|docker|devops|api|framework|database|cloud computing|linux|terminal|cli|compiler|debugging|pull request|open source)\b/i, category: "Dev" },
   // Finance — before Business to win on overlap
@@ -180,8 +190,6 @@ const KEYWORD_RULES: { pattern: RegExp; category: string }[] = [
   { pattern: /\b(history|historical|ancient|medieval|world war|century|civilization|empire|dynasty|archaeology|artifact|antiquity|renaissance|revolution|cold war|colonial|prehistoric|roman|greek|egyptian|ottoman)\b/i, category: "History" },
   // Philosophy
   { pattern: /\b(philosophy|philosophical|ethics|metaphysics|epistemology|ontology|existential|consciousness|free will|stoicism|nietzsche|kant|plato|aristotle|socrates|moral|virtue|logic|phenomenology)\b/i, category: "Philosophy" },
-  // Design
-  { pattern: /\b(ui design|ux design|typography|branding|logo design|graphic design|color palette|figma|sketch app|design system|mockup|wireframe|visual design|interface design|icon design|design inspiration)\b/i, category: "Design" },
   // Food
   { pattern: /\b(recipe|cooking|restaurant|chef|cuisine|meal|ingredient|baking|foodie|street food|tasting menu|michelin|barbecue|grilling|spice|ferment|sourdough|pasta|sushi|ramen|cocktail|wine|beer)\b/i, category: "Food" },
   // Entertainment
