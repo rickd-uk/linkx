@@ -11,6 +11,9 @@ const categoriesToAdd = [
   { name: 'Physics', icon: '⚛️' },
   { name: 'Chemistry', icon: '⚗️' },
   { name: 'Brain Science', icon: '🧠' },
+  { name: 'Tech', icon: '💡' },
+  { name: 'Robotics', icon: '🦾' },
+  { name: 'Electronics', icon: '🔌' },
 ]
 
 const removedCategories = [
@@ -31,12 +34,12 @@ async function main() {
     console.log(`Upserted category: ${category.icon} ${category.name}`)
   }
 
-  // Rename Technology → Dev
+  // Rename old Technology category to the current Tech category.
   const techResult = await prisma.link.updateMany({
     where: { category: 'Technology' },
-    data: { category: 'Dev' },
+    data: { category: 'Tech' },
   })
-  console.log(`Technology → Dev: ${techResult.count} links`)
+  console.log(`Technology → Tech: ${techResult.count} links`)
 
   // Rename Conflict → World
   const conflictResult = await prisma.link.updateMany({

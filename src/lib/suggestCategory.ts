@@ -16,21 +16,38 @@ const DOMAIN_RULES: Record<string, string> = {
   "dev.to": "Dev",
   "news.ycombinator.com": "Dev",
   "ycombinator.com": "Dev",
-  "techcrunch.com": "Dev",
-  "theverge.com": "Dev",
-  "wired.com": "Dev",
-  "arstechnica.com": "Dev",
   "slashdot.org": "Dev",
   "infoq.com": "Dev",
   "thenewstack.io": "Dev",
   "lwn.net": "Dev",
   "lobste.rs": "Dev",
+  // Tech
+  "techcrunch.com": "Tech",
+  "theverge.com": "Tech",
+  "wired.com": "Tech",
+  "arstechnica.com": "Tech",
+  "engadget.com": "Tech",
+  "gizmodo.com": "Tech",
+  "tomshardware.com": "Tech",
+  "zdnet.com": "Tech",
   // Computing
   "arxiv.org": "Computing",
   "acm.org": "Computing",
   "ieee.org": "Computing",
   "computer.org": "Computing",
   "cacm.acm.org": "Computing",
+  // Robotics
+  "therobotreport.com": "Robotics",
+  "roboticsbusinessreview.com": "Robotics",
+  "robotics247.com": "Robotics",
+  "automaton-media.com": "Robotics",
+  // Electronics
+  "spectrum.ieee.org": "Electronics",
+  "allaboutcircuits.com": "Electronics",
+  "electronicsweekly.com": "Electronics",
+  "eejournal.com": "Electronics",
+  "hackaday.com": "Electronics",
+  "electropages.com": "Electronics",
   // Biology
   "nature.com": "Biology",
   "science.org": "Biology",
@@ -178,6 +195,12 @@ const KEYWORD_RULES: { pattern: RegExp; category: string }[] = [
   { pattern: /\b(physics|quantum|particle physics|relativity|astrophysics|cosmology|matter|energy|electron|proton|neutron|photon|atom|nuclear|superconduct|thermodynamics|mechanics)\b/i, category: "Physics" },
   // Chemistry
   { pattern: /\b(chemistry|chemical|molecule|molecular|compound|reaction|catalyst|polymer|material science|materials science|organic chemistry|inorganic chemistry|biochemistry|laboratory experiment)\b/i, category: "Chemistry" },
+  // Robotics
+  { pattern: /\b(robotics|robotic|robot|humanoid robot|industrial robot|autonomous robot|cobot|drone|autonomous drone|actuator|servo motor|mechatronics|robot arm|quadruped|bipedal|slam|simultaneous localization and mapping)\b/i, category: "Robotics" },
+  // Electronics
+  { pattern: /\b(electronics|electronic|circuit|pcb|printed circuit board|semiconductor|microchip|microcontroller|sensor|transistor|diode|capacitor|resistor|fpga|embedded system|integrated circuit|chip fabrication|wafer|soldering)\b/i, category: "Electronics" },
+  // Tech
+  { pattern: /\b(technology|tech|gadget|smartphone|iphone|android|laptop|tablet|wearable|smartwatch|vr headset|augmented reality|virtual reality|consumer tech|platform|app store|social media platform|big tech)\b/i, category: "Tech" },
   // Computing
   { pattern: /\b(computing|computer science|algorithm|data structure|operating system|compiler|distributed system|database|networking|cybersecurity|cryptography|cloud computing|high-performance computing|hpc|supercomputer)\b/i, category: "Computing" },
   // Dev
