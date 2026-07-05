@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [links, voteTotals, userVoteData, categoryData] = await Promise.all([
+    const [links, voteTotals, userVoteData, archivedData, categoryData] = await Promise.all([
       prisma.link.findMany({
         where: whereClause,
         select: {
@@ -65,6 +65,12 @@ export async function GET(request: Request) {
             select: { linkId: true, count: true, createdAt: true },
           })
         : Promise.resolve([]),
+      user
+        ? prisma.archivedLink.findMany({
+            where: { userId: user.userId },
+            select: { linkId: true, archivedAt: true },
+          })
+        : Promise.resolve([]),
       prisma.category.findMany({
         where: { isPublic: true },
         select: { name: true, icon: true },
@@ -74,6 +80,7 @@ export async function GET(request: Request) {
     // Build lookup maps
     const voteTotalMap = new Map(voteTotals.map((v) => [v.linkId, v._sum.count ?? 0]));
     const userVoteMap = new Map(userVoteData.map((v) => [v.linkId, v.count]));
+    const archivedMap = new Map(archivedData.map((a) => [a.linkId, a.archivedAt]));
 
     // Remaining budget
     const todayUsed = userVoteData
@@ -94,6 +101,7 @@ export async function GET(request: Request) {
         publicationYear: link.publicationYear, boost: link.boost,
         isPublic: link.isPublic, createdById: link.createdById,
         submittedBy: link.createdBy?.username ?? null,
+        archivedAt: archivedMap.get(link.id) ?? null,
         totalVotes,
         userVoteCount: userVoteMap.get(link.id) ?? 0,
         hotScore: calculateHotScore(totalVotes, link.boost, new Date(link.timestamp)),
@@ -111,6 +119,7 @@ export async function GET(request: Request) {
       categoryIcons,
       remainingBudget: user ? remainingBudget : null,
       userVotes: user ? Object.fromEntries(userVoteMap) : null,
+      archivedLinks: user ? Object.fromEntries(archivedMap) : null,
     });
   } catch (error) {
     console.error("Failed to fetch links:", error);

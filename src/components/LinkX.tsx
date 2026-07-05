@@ -30,6 +30,7 @@ interface Link {
   isPublic: boolean;
   createdById: string | null;
   submittedBy: string | null;
+  archivedAt: string | null;
 }
 
 const LINKS_PER_PAGE = 20;
@@ -303,6 +304,7 @@ export default function LinkX() {
       const scores = new Map<string, number>();
       const currentUser = userRef.current;
       linkData.forEach((link) => {
+        if (link.archivedAt) return;
         if (!link.category) return; // uncategorized links don't affect category bar
         const weight = currentUser && link.createdById === currentUser.id ? 3 : 1;
         const age = now - new Date(link.timestamp).getTime();
@@ -356,6 +358,9 @@ export default function LinkX() {
     }
 
     let result = [...allLinks];
+    if (isAuthenticated) {
+      result = result.filter((link) => !link.archivedAt);
+    }
     // Always exclude uncategorized from main feed
     result = result.filter((link) => Boolean(link.category));
     if (selectedCategory !== "All") {
